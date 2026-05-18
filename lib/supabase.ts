@@ -13,6 +13,7 @@ export interface Medicine {
   name: string;
   dosage: string;
   time: string; // Time in HH:MM format (e.g., "08:00")
+  quantity: number; // Stock/quantity of medicine
   created_at: string;
   user_id?: string;
 }

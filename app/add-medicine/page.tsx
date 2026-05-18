@@ -9,6 +9,7 @@ export default function AddMedicinePage() {
     name: '',
     dosage: '',
     time: '',
+    quantity: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,7 @@ export default function AddMedicinePage() {
     setSuccess('✨ Medicine name extracted from image!');
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -40,7 +42,7 @@ export default function AddMedicinePage() {
     setSuccess('');
 
     // Validate form
-    if (!formData.name || !formData.dosage || !formData.time) {
+    if (!formData.name || !formData.dosage || !formData.time || !formData.quantity) {
       setError('Please fill all fields');
       setLoading(false);
       return;
@@ -62,7 +64,7 @@ export default function AddMedicinePage() {
       }
 
       setSuccess('Medicine added successfully!');
-      setFormData({ name: '', dosage: '', time: '' });
+      setFormData({ name: '', dosage: '', time: '', quantity: '' });
 
       // Redirect to dashboard after 1.5 seconds
       setTimeout(() => {
@@ -160,6 +162,24 @@ export default function AddMedicinePage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-gray-50 hover:bg-white transition"
               />
+            </div>
+
+            {/* Stock/Quantity */}
+            <div>
+              <label htmlFor="quantity" className="block text-sm font-bold text-gray-700 mb-2">
+                Stock Quantity *
+              </label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                placeholder="e.g., 30"
+                min="0"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-400 bg-gray-50 hover:bg-white transition"
+              />
+              <p className="text-xs text-gray-500 mt-1">How many doses/tablets do you have?</p>
             </div>
 
             {/* Submit Button */}

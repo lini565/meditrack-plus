@@ -4,10 +4,10 @@ import { supabase, type Medicine } from '@/lib/supabase';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, dosage, time } = body;
+    const { name, dosage, time, quantity } = body;
 
     // Validate input
-    if (!name || !dosage || !time) {
+    if (!name || !dosage || !time || quantity === undefined) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
           name,
           dosage,
           time,
+          quantity: parseInt(quantity),
           created_at: new Date().toISOString(),
         },
       ])
@@ -72,6 +73,45 @@ export async function GET(request: NextRequest) {
         message: 'Medicines fetched successfully',
         data: data as Medicine[],
       },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, quantity } = body;
+
+    if (!id || quantity === undefined) {
+      return NextResponse.json(
+        { error: 'ID and quantity are required' },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from('medicines')
+      .update({ quantity: parseInt(quantity) })
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: error.message || 'Failed to update medicine' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'Medicine stock updated', data: data[0] },
       { status: 200 }
     );
   } catch (error) {

@@ -82,6 +82,31 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDecreaseStock = async (id: string, currentQuantity: number) => {
+    if (currentQuantity <= 0) {
+      alert('Stock is already at 0');
+      return;
+    }
+
+    try {
+      const newQuantity = currentQuantity - 1;
+      const response = await fetch('/api/medicines', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, quantity: newQuantity }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update stock');
+      }
+
+      // Refresh medicines list
+      fetchMedicines();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update stock');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-5xl mx-auto mt-8">
@@ -170,6 +195,7 @@ export default function DashboardPage() {
                   <th className="px-6 py-4 text-left font-bold">💊 Medicine Name</th>
                   <th className="px-6 py-4 text-left font-bold">Dosage</th>
                   <th className="px-6 py-4 text-left font-bold">⏰ Time</th>
+                  <th className="px-6 py-4 text-left font-bold">📦 Stock</th>
                   <th className="px-6 py-4 text-center font-bold">Action</th>
                 </tr>
               </thead>
@@ -190,10 +216,34 @@ export default function DashboardPage() {
                         {medicine.time}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4">
+                      <div>
+                        {medicine.quantity < 5 ? (
+                          <div className="bg-red-100 text-red-700 px-3 py-2 rounded font-bold text-sm">
+                            🔴 Critical: {medicine.quantity} left
+                          </div>
+                        ) : medicine.quantity < 10 ? (
+                          <div className="bg-yellow-100 text-yellow-700 px-3 py-2 rounded font-bold text-sm">
+                            🟡 Low: {medicine.quantity} left
+                          </div>
+                        ) : (
+                          <div className="bg-green-100 text-green-700 px-3 py-2 rounded font-bold text-sm">
+                            🟢 OK: {medicine.quantity} available
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center space-x-2">
+                      <button
+                        onClick={() => handleDecreaseStock(medicine.id, medicine.quantity)}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-lg transition inline-block"
+                        title="Decrease stock by 1"
+                      >
+                        ✅ Took
+                      </button>
                       <button
                         onClick={() => handleDelete(medicine.id)}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-100 font-bold px-4 py-2 rounded-lg transition"
+                        className="text-red-600 hover:text-red-800 hover:bg-red-100 font-bold px-3 py-2 rounded-lg transition inline-block"
                       >
                         🗑️ Delete
                       </button>

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         way(around:${radiusMeters},${latitude},${longitude})[amenity=pharmacy];
         relation(around:${radiusMeters},${latitude},${longitude})[amenity=pharmacy];
       );
-      out center 20;
+      out center 100;
     `;
 
     const resp = await fetch('https://overpass-api.de/api/interpreter', {

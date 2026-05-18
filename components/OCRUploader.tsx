@@ -8,30 +8,32 @@ interface OCRUploaderProps {
 }
 
 export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
+  // STEP 2: State Variables
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [extractedText, setExtractedText] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showResults, setShowResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // STEP 3: Image Selection Handler
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
+    // Check if it's an image
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
+      alert('Please select an image file (PNG, JPG)');
       return;
     }
 
-    // Validate file size (max 5MB)
+    // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB');
+      alert('Image must be smaller than 5MB');
       return;
     }
 
+    // Save the image
     setSelectedImage(file);
 
     // Create preview
@@ -42,6 +44,7 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
     reader.readAsDataURL(file);
   };
 
+  // STEP 4: OCR Extraction Function
   const extractTextFromImage = async () => {
     if (!selectedImage) return;
 
@@ -53,41 +56,35 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
       reader.onload = async (event) => {
         const imageSrc = event.target?.result as string;
 
-        // Initialize Tesseract
         const worker = await Tesseract.createWorker('eng');
 
-        // Subscribe to progress events
         worker.onProgress = (progress) => {
           setProgress(Math.round(progress.progress * 100));
         };
 
-        // Recognize text
         const result = await worker.recognize(imageSrc);
         const text = result.data.text;
 
         setExtractedText(text);
-        setShowResults(true);
 
-        // Cleanup
         await worker.terminate();
       };
       reader.readAsDataURL(selectedImage);
     } catch (error) {
       console.error('OCR Error:', error);
-      alert('Failed to extract text from image');
+      alert('Failed to read text from image');
     } finally {
       setLoading(false);
       setProgress(0);
     }
   };
 
+  // STEP 5: Extract Medicine Name from OCR text
   const extractMedicineName = () => {
     if (!extractedText) return;
 
-    // Simple extraction: look for common medicine name patterns
     const lines = extractedText.split('\n');
 
-    // Find the first non-empty, significant line
     let medicineName = '';
     for (const line of lines) {
       const cleaned = line.trim();
@@ -99,31 +96,30 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
 
     if (medicineName) {
       onMedicineExtracted(medicineName);
-      // Reset form
       setSelectedImage(null);
       setPreview('');
       setExtractedText('');
-      setShowResults(false);
     } else {
-      alert('Could not extract medicine name. Please try again or enter manually.');
+      alert('Could not find a medicine name. Please try again.');
     }
   };
 
+  // STEP 6: Reset handler
   const handleReset = () => {
     setSelectedImage(null);
     setPreview('');
     setExtractedText('');
-    setShowResults(false);
     setProgress(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
+  // STEP 7: UI
   return (
     <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
       <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        📸 OCR Medicine Detector
+        📸 OCR Medicine Reader
       </h3>
 
       {!selectedImage ? (
@@ -144,7 +140,6 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
         </div>
       ) : (
         <>
-          {/* Preview */}
           <div className="mb-6">
             <img
               src={preview}
@@ -153,7 +148,6 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
             />
           </div>
 
-          {/* Loading Progress */}
           {loading && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
@@ -169,7 +163,6 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
             </div>
           )}
 
-          {/* Extracted Text */}
           {extractedText && (
             <div className="mb-6 bg-white p-4 rounded-lg border border-purple-200 max-h-48 overflow-y-auto">
               <p className="text-sm font-semibold text-gray-700 mb-2">Extracted Text:</p>
@@ -177,7 +170,6 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="space-y-3">
             {!extractedText ? (
               <button
