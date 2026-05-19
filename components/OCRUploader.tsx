@@ -58,14 +58,11 @@ export default function OCRUploader({ onMedicineExtracted }: OCRUploaderProps) {
 
         const worker = await Tesseract.createWorker('eng');
 
-        worker.onProgress = (progress) => {
-          setProgress(Math.round(progress.progress * 100));
-        };
-
         const result = await worker.recognize(imageSrc);
         const text = result.data.text;
 
         setExtractedText(text);
+        setProgress(100);
 
         await worker.terminate();
       };

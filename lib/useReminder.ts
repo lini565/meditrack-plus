@@ -117,14 +117,15 @@ function getTimeDifference(currentTime: string, medicineTime: string): number {
 // Send browser notification with sound and persistence
 function sendNotification(medicine: Medicine) {
   if ('Notification' in window && Notification.permission === 'granted') {
-    const notification = new Notification(`💊 Medicine Time: ${medicine.name}`, {
+    const notificationOptions: NotificationOptions & { vibrate?: number[] } = {
       body: `Dosage: ${medicine.dosage}\nTime: ${medicine.time}`,
       icon: '/favicon.ico',
       badge: '/favicon.ico',
       tag: `medicine-reminder-${medicine.id}`,
       requireInteraction: true, // Keep notification until user interacts
       vibrate: [200, 100, 200], // Vibration pattern
-    });
+    };
+    const notification = new Notification(`💊 Medicine Time: ${medicine.name}`, notificationOptions);
 
     // Handle notification click
     notification.onclick = () => {
